@@ -8,7 +8,7 @@ type InterfaceInfo struct {
 	Name       string `json:"name"`
 	IPAddress  string `json:"ip"`
 	MACAddress string `json:"mac"`
-	IsUp       string `json:"is_up"`
+	IsUp       bool   `json:"is_up"`
 	MTU        int    `json:"mtu"`
 }
 
