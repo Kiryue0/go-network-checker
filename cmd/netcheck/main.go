@@ -1,14 +1,11 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/Kiryue0/go-network-checker/internal/network"
+	"github.com/Kiryue0/go-network-checker/internal/cli"
 )
 
 func main() {
 
-	fmt.Println("Hello World")
-	fmt.Println(network.PingHost("google.com", 5))
+	cli.Execute()
 
 }
