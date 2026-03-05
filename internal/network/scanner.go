@@ -52,14 +52,17 @@ func ScanPort(host string, port int, timeout time.Duration) model.PortResult {
 
 func ScanPorts(hosts []string, ports []int, timeout time.Duration) []model.PortResult {
 	var wg sync.WaitGroup
-	results := make(chan model.PortResult, len(hosts))
-
+	results := make(chan model.PortResult, len(hosts)*len(ports))
+	sem := make(chan struct{}, 50)
 	for _, host := range hosts {
 		for _, port := range ports {
 			wg.Add(1)
 			go func(h string, p int) {
 				defer wg.Done()
-				results <- ScanPort(h, p, timeout)
+				sem <- struct{}{}
+				result := ScanPort(h, p, timeout)
+				<-sem
+				results <- result
 			}(host, port)
 		}
 	}
