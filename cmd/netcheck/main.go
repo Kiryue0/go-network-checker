@@ -9,6 +9,6 @@ import (
 func main() {
 
 	fmt.Println("Hello World")
-	fmt.Println(network.PingHost("google.com"))
+	fmt.Println(network.PingHost("google.com", 5))
 
 }
