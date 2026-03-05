@@ -16,7 +16,7 @@ func PingHost(host string, count int) (model.PingResult, error) {
 
 	isAlive := true
 	var rtt time.Duration
-	timeStamp := time.Now().Format(time.ANSIC)
+	timeStamp := time.Now()
 	var packetLoss float64
 	cmd := exec.Command("ping", "-c", strconv.Itoa(count), host)
 	output, err := cmd.CombinedOutput()
@@ -87,10 +87,9 @@ func PingHosts(hosts []string, count int) []model.PingResult {
 		}(host)
 	}
 
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
+	wg.Wait()
+	close(results)
+
 	var pingResults []model.PingResult
 	for result := range results {
 		pingResults = append(pingResults, result)

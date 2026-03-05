@@ -17,7 +17,7 @@ type PingResult struct {
 	IsAlive    bool          `json:"is_alive"`
 	RTT        time.Duration `json:"rtt"`
 	PacketLoss float64       `json:"packet_loss"`
-	Timestamp  string        `json:"timestamp"`
+	Timestamp  time.Time     `json:"timestamp"`
 }
 
 type PortResult struct {
