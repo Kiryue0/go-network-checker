@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Gofmt check
+        run: |
+          if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
+            echo "Code is not formatted:"
+            gofmt -l .
+            exit 1
+          fi
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+
+      - name: Tests
+        run: go test -race -cover ./...
+
+      - name: gosec
+        uses: securego/gosec@master
+        with:
+          args: ./...
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fitness function
+        run: |
+          echo "Checking cmd/ does not import internal packages directly..."
+          if grep -r "go-network-checker/internal/network\|go-network-checker/internal/export\|go-network-checker/internal/metrics" cmd/; then
+            echo "FAIL: cmd/ imports internal packages directly"
+            exit 1
+          fi
+          echo "OK"
+
+      - name: Build
+        run: go build -o netcheck ./cmd/netcheck
