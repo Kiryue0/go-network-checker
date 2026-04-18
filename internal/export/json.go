@@ -11,7 +11,7 @@ import (
 
 func SaveJSON(report model.ScanReport, outputDir string) error {
 	scanDate := time.Now().Format("2006-01-02_15-04-05")
-	err := os.MkdirAll(outputDir, 0755)
+	err := os.MkdirAll(outputDir, 0750)
 	if err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
@@ -21,7 +21,7 @@ func SaveJSON(report model.ScanReport, outputDir string) error {
 	}
 	filePath := outputDir + "/scan_" + scanDate + ".json"
 
-	err = os.WriteFile(filePath, data, 0644)
+	err = os.WriteFile(filePath, data, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}

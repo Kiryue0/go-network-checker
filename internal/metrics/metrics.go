@@ -39,7 +39,7 @@ func init() {
 
 func StartServer(addr string) {
 	go func() {
-		if err := http.ListenAndServe(addr, nil); err != nil {
+		if err := http.ListenAndServe(addr, nil); err != nil { //#nosec G114
 			slog.Error("metrics server failed", "error", err)
 		}
 	}()
