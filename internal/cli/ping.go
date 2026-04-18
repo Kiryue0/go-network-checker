@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"text/tabwriter"
 
 	"github.com/Kiryue0/go-network-checker/internal/network"
@@ -16,8 +18,9 @@ var pingCmd = &cobra.Command{
 	Short: "Ping one or more hosts",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
-		pings := network.PingHosts(args, pingFlag)
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer cancel()
+		pings := network.PingHosts(ctx, args, pingFlag)
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 		fmt.Fprintln(w, "HOST\tSTATUS\tRTT\tPACKET LOSS\tDATE TIME")

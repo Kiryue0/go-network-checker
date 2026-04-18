@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/Kiryue0/go-network-checker/internal/export"
@@ -19,14 +21,16 @@ var exportCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer cancel()
 		ports, err := parsePorts(portsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			return
 		}
 
-		portReport := network.ScanPorts(args, ports, timeout)
-		pings := network.PingHosts(args, 3)
+		portReport := network.ScanPorts(ctx, args, ports, timeout)
+		pings := network.PingHosts(ctx, args, 3)
 		aliveHosts := 0
 		for _, ping := range pings {
 			if ping.IsAlive {

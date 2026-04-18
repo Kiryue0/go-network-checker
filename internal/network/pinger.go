@@ -1,6 +1,7 @@
 package network
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"os/exec"
@@ -71,13 +72,18 @@ func PingHost(host string, count int) (model.PingResult, error) {
 
 }
 
-func PingHosts(hosts []string, count int) []model.PingResult {
+func PingHosts(ctx context.Context, hosts []string, count int) []model.PingResult {
 	var wg sync.WaitGroup
 	results := make(chan model.PingResult, len(hosts))
 	for _, host := range hosts {
 		wg.Add(1)
 		go func(h string) {
 			defer wg.Done()
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
 			result, err := PingHost(h, count)
 			if err != nil {
 				slog.Warn("ping failed", "host", h, "error", err)
