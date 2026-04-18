@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var pingCount int
+var pingFlag int
 
 var pingCmd = &cobra.Command{
 	Use:   "ping [hosts]",
@@ -17,7 +17,7 @@ var pingCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		pings := network.PingHosts(args, pingCount)
+		pings := network.PingHosts(args, pingFlag)
 
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
 		fmt.Fprintln(w, "HOST\tSTATUS\tRTT\tPACKET LOSS\tDATE TIME")
@@ -41,6 +41,6 @@ var pingCmd = &cobra.Command{
 }
 
 func init() {
-	pingCmd.Flags().IntVarP(&pingCount, "count", "c", 5, "Number of ping packets to send")
+	pingCmd.Flags().IntVarP(&pingFlag, "count", "c", 5, "Number of ping packets to send")
 	rootCmd.AddCommand(pingCmd)
 }
