@@ -19,7 +19,7 @@ func PingHost(host string, count int) (model.PingResult, error) {
 	var rtt time.Duration
 	timeStamp := time.Now()
 	var packetLoss float64
-	cmd := exec.Command("ping", "-c", strconv.Itoa(count), host) //#nosec G114
+	cmd := exec.Command("ping", "-c", strconv.Itoa(count), host) // #nosec G204
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return model.PingResult{
