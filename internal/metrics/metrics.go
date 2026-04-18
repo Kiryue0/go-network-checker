@@ -1,10 +1,10 @@
 package metrics
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var ScanPortsTotal = prometheus.NewCounter(prometheus.CounterOpts{
@@ -38,6 +38,10 @@ func init() {
 }
 
 func StartServer(addr string) {
-	http.Handle("/metrics", promhttp.Handler())
-	go http.ListenAndServe(addr, nil)
+	go func() {
+		if err := http.ListenAndServe(addr, nil); err != nil {
+			slog.Error("metrics server failed", "error", err)
+		}
+	}()
+
 }
