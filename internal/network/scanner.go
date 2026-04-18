@@ -5,9 +5,11 @@ import (
 	"net"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/Kiryue0/go-network-checker/internal/metrics"
 	"github.com/Kiryue0/go-network-checker/internal/model"
 )
 
@@ -33,6 +35,10 @@ func ScanPort(ctx context.Context, host string, port int, timeout time.Duration)
 	dialer := net.Dialer{Timeout: timeout}
 	conn, err := dialer.DialContext(ctx, "tcp", host+":"+strconv.Itoa(port))
 	if err != nil {
+		if !strings.Contains(err.Error(), "connection refused") {
+			metrics.ScanErrors.Inc()
+		}
+		metrics.ScanPortsTotal.Inc()
 		return model.PortResult{
 			Host:    host,
 			Port:    port,
@@ -43,6 +49,10 @@ func ScanPort(ctx context.Context, host string, port int, timeout time.Duration)
 
 	elapsed := time.Since(start)
 	defer conn.Close()
+
+	metrics.ScanPortsOpenTotal.Inc()
+	metrics.ScanPortsTotal.Inc()
+	metrics.ScanDuration.Observe(elapsed.Seconds())
 
 	return model.PortResult{
 		Host:         host,

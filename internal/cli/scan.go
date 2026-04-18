@@ -10,6 +10,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/Kiryue0/go-network-checker/internal/metrics"
 	"github.com/Kiryue0/go-network-checker/internal/network"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,7 @@ var scanCmd = &cobra.Command{
 	Short: "Scan ports on one or more hosts",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		metrics.StartServer(":2112")
 		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 		defer cancel()
 		ports, err := parsePorts(portsFlag)
