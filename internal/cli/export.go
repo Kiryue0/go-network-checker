@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Kiryue0/go-network-checker/internal/export"
+	"github.com/Kiryue0/go-network-checker/internal/metrics"
 	"github.com/Kiryue0/go-network-checker/internal/model"
 	"github.com/Kiryue0/go-network-checker/internal/network"
 	"github.com/spf13/cobra"
@@ -46,6 +47,7 @@ var exportCmd = &cobra.Command{
 		}
 		exportedError := export.SaveJSON(scanReport, outputDir)
 		if exportedError != nil {
+			metrics.ExportErrors.Inc()
 			fmt.Fprintf(os.Stderr, "error: %v\n", exportedError)
 			return
 		}
