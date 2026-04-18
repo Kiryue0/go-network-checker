@@ -1,7 +1,9 @@
 package network
 
 import (
+	"context"
 	"net"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -25,10 +27,11 @@ var knownServices = map[int]string{
 	27017: "MongoDB",
 }
 
-func ScanPort(host string, port int, timeout time.Duration) model.PortResult {
+func ScanPort(ctx context.Context, host string, port int, timeout time.Duration) model.PortResult {
 
 	start := time.Now()
-	conn, err := net.DialTimeout("tcp", host+":"+strconv.Itoa(port), timeout)
+	dialer := net.Dialer{Timeout: timeout}
+	conn, err := dialer.DialContext(ctx, "tcp", host+":"+strconv.Itoa(port))
 	if err != nil {
 		return model.PortResult{
 			Host:    host,
@@ -37,6 +40,7 @@ func ScanPort(host string, port int, timeout time.Duration) model.PortResult {
 			Service: knownServices[port],
 		}
 	}
+
 	elapsed := time.Since(start)
 	defer conn.Close()
 
@@ -50,7 +54,7 @@ func ScanPort(host string, port int, timeout time.Duration) model.PortResult {
 
 }
 
-func ScanPorts(hosts []string, ports []int, timeout time.Duration) []model.PortResult {
+func ScanPorts(ctx context.Context, hosts []string, ports []int, timeout time.Duration) []model.PortResult {
 	var wg sync.WaitGroup
 	results := make(chan model.PortResult, len(hosts)*len(ports))
 	sem := make(chan struct{}, 50)
@@ -59,8 +63,12 @@ func ScanPorts(hosts []string, ports []int, timeout time.Duration) []model.PortR
 			wg.Add(1)
 			go func(h string, p int) {
 				defer wg.Done()
-				sem <- struct{}{}
-				result := ScanPort(h, p, timeout)
+				select {
+				case sem <- struct{}{}:
+				case <-ctx.Done():
+					return
+				}
+				result := ScanPort(ctx, h, p, timeout)
 				<-sem
 				results <- result
 			}(host, port)
@@ -74,6 +82,10 @@ func ScanPorts(hosts []string, ports []int, timeout time.Duration) []model.PortR
 	for result := range results {
 		scanResults = append(scanResults, result)
 	}
+
+	sort.Slice(scanResults, func(i, j int) bool {
+		return scanResults[i].Port < scanResults[j].Port
+	})
 
 	return scanResults
 }

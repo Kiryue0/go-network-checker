@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -20,13 +22,15 @@ var scanCmd = &cobra.Command{
 	Short: "Scan ports on one or more hosts",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer cancel()
 		ports, err := parsePorts(portsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			return
 		}
 
-		scans := network.ScanPorts(args, ports, timeout)
+		scans := network.ScanPorts(ctx, args, ports, timeout)
 
 		for _, host := range args {
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
