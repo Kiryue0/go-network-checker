@@ -53,7 +53,9 @@ var scanCmd = &cobra.Command{
 					scan.ResponseTime,
 				)
 			}
-			w.Flush()
+			if err := w.Flush(); err != nil {
+				fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			}
 			fmt.Println()
 		}
 	},

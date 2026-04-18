@@ -39,7 +39,9 @@ var pingCmd = &cobra.Command{
 				ping.Timestamp.Format("2006-01-02 15:04:05"),
 			)
 		}
-		w.Flush()
+		if err := w.Flush(); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		}
 	},
 }
 

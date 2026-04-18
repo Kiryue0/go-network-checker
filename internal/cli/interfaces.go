@@ -37,7 +37,9 @@ var interfacesCmd = &cobra.Command{
 				iface.MTU,
 			)
 		}
-		w.Flush()
+		if err := w.Flush(); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		}
 	},
 }
 
